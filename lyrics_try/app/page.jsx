@@ -4,28 +4,37 @@ import { useState } from "react"
 import LyricsModal from "./components/lyrics-modal"
 import LyricsBackground from "./components/lyrics-background"
 import AudioWave from "./components/audio-wave"
+import { searchLyrics } from "./actions" // Import API call function
 
 export default function Home() {
   const [singer, setSinger] = useState("")
   const [song, setSong] = useState("")
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [lyrics, setLyrics] = useState("")
+  const [successRate, setSuccessRate] = useState(null)
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-
     if (!singer || !song) return
 
     setIsLoading(true)
 
     try {
-      // Simulate API call with a timeout
-      await new Promise((resolve) => setTimeout(resolve, 1000))
+      const response = await searchLyrics(singer, song)
 
-      // Simulate no lyrics found to show the modal
-      setIsModalOpen(true)
+      if (!response || response.status === 404) {
+        // No lyrics found, open modal for user submission
+        setLyrics("")
+        setSuccessRate(null)
+        setIsModalOpen(true)
+      } else {
+        // Lyrics found, update UI
+        setLyrics(response.lyrics)
+        setSuccessRate(response.successRate) // Assuming API returns successRate
+      }
     } catch (error) {
-      console.error("Error searching lyrics:", error)
+      console.error("Error fetching lyrics:", error)
       setIsModalOpen(true)
     } finally {
       setIsLoading(false)
@@ -34,11 +43,9 @@ export default function Home() {
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-4 relative overflow-hidden">
-      {/* Lyrics Animation Background */}
       <LyricsBackground />
 
-      {/* Audio Wave - positioned to align with the form */}
-      <div className="fixed inset-x-0 h-40 z-0" style={{ top: "calc(47%" }}>
+      <div className="fixed inset-x-0 h-40 z-0" style={{ top: "calc(47%)" }}>
         <AudioWave />
       </div>
 
@@ -90,10 +97,18 @@ export default function Home() {
             {isLoading ? "Searching..." : "Find Lyrics"}
           </button>
         </form>
+
+        {/* Display Lyrics & Success Rate if Found */}
+        {lyrics && (
+          <div className="bg-white/10 p-4 rounded-md text-white">
+            <h2 className="text-xl font-semibold">Success Rate: {successRate}%</h2>
+            <p className="mt-2 whitespace-pre-line">{lyrics}</p>
+          </div>
+        )}
       </div>
 
+      {/* Modal for User to Add Lyrics */}
       <LyricsModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} singer={singer} song={song} />
     </main>
   )
 }
-

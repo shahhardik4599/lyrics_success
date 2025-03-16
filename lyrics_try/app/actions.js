@@ -1,51 +1,58 @@
 "use server"
 
-// This is a server action that will call your backend API
+const BASE_URL = "http://172.20.10.5:3000"; // Your backend server
+
+// Function to fetch lyrics using the expected API format
 export async function searchLyrics(singer, song) {
   try {
-    // Replace with your actual API endpoint
-    const response = await fetch(
-      `https://your-lyrics-api.com/search?singer=${encodeURIComponent(singer)}&song=${encodeURIComponent(song)}`,
-      {
-        cache: "no-store",
-      },
-    )
-
-    if (!response.ok) {
-      return null
-    }
-
-    return await response.json()
-  } catch (error) {
-    console.error("Error fetching lyrics:", error)
-    return null
-  }
-}
-
-// This function will be called when the user submits lyrics directly
-export async function submitLyrics(formData) {
-  try {
-    const singer = formData.get("singer")
-    const song = formData.get("song")
-    const lyrics = formData.get("lyrics")
-
-    // Replace with your actual API endpoint for submitting lyrics
-    const response = await fetch("https://your-lyrics-api.com/submit", {
+    const response = await fetch(`${BASE_URL}/get_lyrics`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ singer, song, lyrics }),
-    })
+      body: JSON.stringify({
+        song_name: song,  // Use correct key expected by API
+        performer: singer, // Use correct key expected by API
+      }),
+      cache: "no-store",
+    });
 
     if (!response.ok) {
-      throw new Error("Failed to submit lyrics")
+      if (response.status === 404) return null; // No lyrics found
+      throw new Error("Failed to fetch lyrics");
     }
 
-    return { success: true }
+    const data = await response.json();
+    return {
+      lyrics: data.lyrics,
+      successRate: data.successRate, // Assuming API returns this
+    };
   } catch (error) {
-    console.error("Error submitting lyrics:", error)
-    return { success: false, error: "Failed to submit lyrics" }
+    console.error("Error fetching lyrics:", error);
+    return null;
   }
 }
 
+// Function to submit lyrics if not found
+export async function submitLyrics(formData) {
+  try {
+    const singer = formData.get("singer");
+    const song = formData.get("song");
+    const lyrics = formData.get("lyrics");
+
+    const response = await fetch(`${BASE_URL}/submit_lyrics`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ song_name: song, performer: singer, lyrics }),
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to submit lyrics");
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error submitting lyrics:", error);
+    return { success: false, error: "Failed to submit lyrics" };
+  }
+}
