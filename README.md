@@ -2,6 +2,8 @@
 ## 📌 Project Overview 
 This project explores the relationship between song lyrics and their success. Using **Natural Language Processing (NLP) and Machine Learning (ML)**, we analyze whether a song'lyrics alone can predict if it will become a **hit or not**. By leveraging **TF-IDF, Word2Vec, and ML models**, we aim to uncover patterns in lyrics that contribute to popularity. 
 
+<img width="1527" alt="Screenshot 2025-04-23 at 7 47 23 AM" src="https://github.com/user-attachments/assets/8929048b-e048-4a38-9f08-6f5b31ac1c59" />
+
 ## Key Features 
 - **Sentiment Analysis** 
 - **Word Usage Patterns**
